@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+html {
+  font-size: 14px;
+}
+
+body {
+  width: 450px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
