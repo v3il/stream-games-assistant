@@ -3,7 +3,7 @@ import { mount } from 'svelte';
 import { Container } from 'typedi';
 import { AuthFacade } from '@shared/modules';
 import './store.css';
-import { ExtensionRoot } from './views';
+// import { ExtensionRoot } from './views';
 import { StreamElementsUIService } from '@store/modules';
 import { logError } from '@utils';
 
@@ -19,8 +19,8 @@ export const main = async () => {
 
         streamElementsUIService.sidebarEl.appendChild(rootEl);
 
-        mount(ExtensionRoot, {
-            target: rootEl
-        });
+        // mount(ExtensionRoot, {
+        //     target: rootEl
+        // });
     });
 };

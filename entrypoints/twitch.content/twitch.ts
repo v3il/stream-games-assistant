@@ -1,41 +1,64 @@
 import 'reflect-metadata';
 import './twitch.css';
-import { ExtensionRoot } from '@twitch/views';
+import ExtensionRoot from './ExtensionRoot.vue';
 import { Container } from 'typedi';
-import { TwitchUIService } from '@twitch/modules';
-import { AuthFacade } from '@shared/modules';
+import { TwitchUIService } from '@twitch/core/modules';
+// import { AuthFacade } from '@shared/modules';
 import { isDev } from '@shared/consts';
-import { log, logError } from '@utils';
-import { mount, unmount } from 'svelte';
-import { isHitsquadChannel } from './config';
+import { type App, createApp } from 'vue';
+
+function getChannelName() {
+    return location.pathname.slice(1);
+}
+
+function isSupportedChannel() {
+    return [
+        'hitsquadgodfather',
+        'hitsquadbruno',
+        'hitsquadvito',
+        'hitsquadcarlo',
+        'staggerrilla'
+    ].includes(getChannelName());
+}
+
+function createRootElement() {
+    const rootEl = document.createElement('div');
+
+    rootEl.id = 'sga-root';
+    document.body.appendChild(rootEl);
+
+    return rootEl;
+}
 
 export const main = async () => {
-    let currentView: Record<string, any> | null;
+    let app: App | null = null;
 
     const twitchUIService = Container.get(TwitchUIService);
-    const authFacade = Container.get(AuthFacade);
+    // const authFacade = Container.get(AuthFacade);
 
-    await authFacade
-        .auth()
-        .catch((error) => logError('Error during authentication:', error));
+    // await authFacade
+    //     .auth()
+    //     .catch((error) => logError('Error during authentication:', error));
 
     log(`Running in ${isDev ? 'dev' : 'prod'} mode`);
 
-    if (isHitsquadChannel()) {
+    if (isSupportedChannel()) {
         twitchUIService.whenStreamReady(() => {
-            currentView = mount(ExtensionRoot, {
-                target: document.body
+            app = createApp(ExtensionRoot, {
+                channelName: getChannelName()
             });
+
+            app.mount(createRootElement());
         });
     }
 
-    window.addEventListener('hgf-helper:urlChanged', () => {
-        if (currentView) {
-            unmount(currentView);
-            currentView = null;
+    window.addEventListener('sga:urlChanged', () => {
+        if (app) {
+            app.unmount();
+            app = null;
         }
 
-        if (isHitsquadChannel()) {
+        if (isSupportedChannel()) {
             location.reload();
         }
     });

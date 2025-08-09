@@ -8,7 +8,7 @@ interface IParams extends UserConfig {
 
 // See https://wxt.dev/api/config.html
 export const buildConfig = ({ description, ...rest }: IParams): UserConfig => ({
-    modules: ['@wxt-dev/module-svelte'],
+    modules: ['@wxt-dev/module-vue'],
 
     vite: () => ({
         plugins: [
@@ -18,7 +18,7 @@ export const buildConfig = ({ description, ...rest }: IParams): UserConfig => ({
 
     manifest: {
         description,
-        name: 'HGF Helper',
+        name: 'Stream Games Assistant',
         permissions: ['storage'],
         host_permissions: [
             'https://www.twitch.tv/*',

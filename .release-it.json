@@ -3,8 +3,8 @@
 
   "github": {
     "release": true,
-    "releaseName" : "hgf-helper@v${version}",
-    "assets": [".output/hgf-helper@v${version}.zip"],
+    "releaseName" : "sga@v${version}",
+    "assets": [".output/sga@v${version}.zip"],
     "releaseNotes": ""
   },
 

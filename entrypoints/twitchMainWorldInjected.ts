@@ -94,7 +94,7 @@ export default defineUnlistedScript(() => {
     function handleUrlChange() {
         const dispatchEvent = (prevUrl: string) => {
             if (prevUrl !== window.location.href.toString()) {
-                window.dispatchEvent(new CustomEvent('hgf-helper:urlChanged'));
+                window.dispatchEvent(new CustomEvent('sga:urlChanged'));
             }
         }
 
@@ -130,7 +130,7 @@ export default defineUnlistedScript(() => {
 
         const twitchChatService = new TwitchChatService({ chatInputEl, sendMessageEl });
 
-        window.addEventListener('hgf-helper:sendMessage', (event) => {
+        window.addEventListener('sga:sendMessage', (event) => {
             twitchChatService.sendMessage((event as CustomEvent).detail);
         });
 
