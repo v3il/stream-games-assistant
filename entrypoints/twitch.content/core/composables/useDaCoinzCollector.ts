@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import { InjectionTokens } from '../../injectionTokens';
+import { InjectionTokens } from '../injectionTokens';
 
 export const useDaCoinzCollector = () => {
     let observer: MutationObserver | null = null;

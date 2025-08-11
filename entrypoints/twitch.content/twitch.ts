@@ -5,7 +5,7 @@ import { Container } from 'typedi';
 import { MessageSender, TwitchUIService, TwitchPlayerService } from '@twitch/core/modules';
 import { isDev } from '@shared/consts';
 import { type App, createApp } from 'vue';
-import { InjectionTokens } from './injectionTokens';
+import { InjectionTokens } from './core/injectionTokens';
 // import { AuthFacade } from '@shared/modules';
 
 function getChannelName() {

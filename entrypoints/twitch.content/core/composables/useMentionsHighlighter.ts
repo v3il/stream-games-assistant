@@ -1,13 +1,11 @@
-// import { Container } from 'typedi';
-// import { SettingsFacade } from '@shared/modules';
-// import { ChatObserver } from '../modules/ChatObserver';
 import { UnsubscribeTrigger } from '@shared/EventEmitter';
-import { onDestroy } from 'svelte';
-import { InjectionTokens } from '../../injectionTokens';
+import { InjectionTokens } from '../injectionTokens';
 
 export const useMentionsHighlighter = () => {
     // const settingsFacade = Container.get(SettingsFacade);
     const chatObserver = inject(InjectionTokens.CHAT_OBSERVER)!;
+
+    console.error(chatObserver)
 
     let destroyChatObserver: UnsubscribeTrigger | undefined;
 
@@ -27,7 +25,7 @@ export const useMentionsHighlighter = () => {
         });
     }
 
-    onDestroy(() => {
+    onUnmounted(() => {
         destroyChatObserver?.();
         // destroySettingObserver();
     })

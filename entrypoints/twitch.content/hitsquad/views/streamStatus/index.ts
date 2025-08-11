@@ -1,1 +1,1 @@
-export { default as StreamStatus } from './StreamStatus';
+export { default as StreamStatus } from './StreamStatus.vue';

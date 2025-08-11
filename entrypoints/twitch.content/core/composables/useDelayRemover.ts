@@ -1,5 +1,5 @@
 import { Timing } from '@shared/consts';
-import { InjectionTokens } from '../../injectionTokens';
+import { InjectionTokens } from '../injectionTokens';
 
 export const useDelayRemover = () => {
     let intervalId: number;

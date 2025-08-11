@@ -1,7 +1,7 @@
 <template>
     <div class="flex justify-between items-center py-[10px] px-[16px] w-full rounded-xl">
         <!--    <MiniGamesControls />-->
-        <!--    <StreamStatus />-->
+        <StreamStatus />
     </div>
 </template>
 
@@ -17,7 +17,8 @@ import {
     LootGameService
 } from './modules';
 import { useDaCoinzCollector, useDelayRemover, useMentionsHighlighter } from '@twitch/core/composables';
-import { InjectionTokens } from '@twitch/injectionTokens';
+import { StreamStatus } from './views';
+import { InjectionTokens } from '../core/injectionTokens';
 
 const localSettingsService = new LocalSettingsService<IHitsquadLocalSettings>({
     hitsquadRounds: 0,

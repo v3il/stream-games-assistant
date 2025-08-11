@@ -44,16 +44,16 @@ export class HitsquadStreamStatusService extends StreamStatusService {
     checkStreamStatus() {
         super.checkStreamStatus();
 
-        this.isBotWorking = (Date.now() - this.lastRewardTimestamp) < hitsquadConfig.miniGamesBotDowntime;
-
-        this.checkAntiCheat();
-
-        if (this.isAntiCheat) {
-            return;
-        }
-
-        this.checkLootGame();
-        this.checkChestGame();
+        // this.isBotWorking = (Date.now() - this.lastRewardTimestamp) < hitsquadConfig.miniGamesBotDowntime;
+        //
+        // this.checkAntiCheat();
+        //
+        // if (this.isAntiCheat) {
+        //     return;
+        // }
+        //
+        // this.checkLootGame();
+        // this.checkChestGame();
     }
 
     private listenEvents() {

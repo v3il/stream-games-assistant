@@ -1,17 +1,22 @@
 <template>
     <div :title="tooltip">
-        <Icon size="18" :class="indicatorClass" />
+        <slot :classes="indicatorClasses" />
     </div>
 </template>
 
 <script setup lang="ts">
-interface IProps {
-    Icon: Component,
-    isOk: boolean,
+import type { Slot } from 'vue';
+
+const props = defineProps<{
+    ok: boolean,
     tooltip: string
-}
+}>();
 
-const props = defineProps<IProps>();
+defineSlots<{
+    default: Slot<{ classes: string }>
+}>();
 
-const indicatorClass = computed(() => props.isOk ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400');
+const indicatorClasses = computed(() => {
+    return props.ok ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+});
 </script>

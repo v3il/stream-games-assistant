@@ -5,7 +5,7 @@ interface IHitsquadConfig {
     miniGamesBotDowntime: number;
     hitsquadGameBaseTimeout: number;
     twitchAdminName: string;
-    delayRemoverInterval: number;
+    // delayRemoverInterval: number;
 }
 
 const twitchChannelName = location.pathname.slice(1);

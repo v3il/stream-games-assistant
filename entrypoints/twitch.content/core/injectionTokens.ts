@@ -5,7 +5,7 @@ import {
     TwitchPlayerService,
     ChatObserver,
     StreamStatusService
-} from '@twitch/core/modules';
+} from './modules';
 import { AuthFacade } from '@shared/modules';
 
 export const InjectionTokens = {

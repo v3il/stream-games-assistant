@@ -1,3 +1,3 @@
-export * from './useDelayRemover.svelte';
-export * from './useDaCoinzCollector.svelte';
-export * from './useMentionsHighlighter.svelte';
+export * from './useDelayRemover';
+export * from './useDaCoinzCollector';
+export * from './useMentionsHighlighter';
