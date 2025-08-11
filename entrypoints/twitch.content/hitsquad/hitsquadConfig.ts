@@ -1,6 +1,6 @@
 import { Timing } from '@shared/consts';
 
-interface IConfig {
+interface IHitsquadConfig {
     twitchChannelName: string;
     miniGamesBotDowntime: number;
     hitsquadGameBaseTimeout: number;
@@ -18,10 +18,10 @@ export const isMiniGamesChannel = () => [
     'staggerrilla'
 ].includes(twitchChannelName);
 
-export const config: IConfig = {
+export const hitsquadConfig: IHitsquadConfig = {
     twitchChannelName,
     twitchAdminName: twitchChannelName,
     miniGamesBotDowntime: 10 * Timing.MINUTE,
     hitsquadGameBaseTimeout: 5 * Timing.MINUTE,
-    delayRemoverInterval: 3 * Timing.MINUTE
+    // delayRemoverInterval: 3 * Timing.MINUTE
 } as const;

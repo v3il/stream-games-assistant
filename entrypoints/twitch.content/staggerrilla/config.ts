@@ -25,3 +25,6 @@ export const config: IConfig = {
     hitsquadGameBaseTimeout: 5 * Timing.MINUTE,
     delayRemoverInterval: 3 * Timing.MINUTE
 } as const;
+
+
+// bleepbloopinbot: A giveaway has started for 5k Bubs! " !chesst " to enter Bubbers auto added. ALL RULES APPLY DISCORD/STREAM.

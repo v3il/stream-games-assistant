@@ -2,10 +2,11 @@ import 'reflect-metadata';
 import './twitch.css';
 import ExtensionRoot from './ExtensionRoot.vue';
 import { Container } from 'typedi';
-import { TwitchUIService } from '@twitch/core/modules';
-// import { AuthFacade } from '@shared/modules';
+import { MessageSender, TwitchUIService, TwitchPlayerService } from '@twitch/core/modules';
 import { isDev } from '@shared/consts';
 import { type App, createApp } from 'vue';
+import { InjectionTokens } from './injectionTokens';
+// import { AuthFacade } from '@shared/modules';
 
 function getChannelName() {
     return location.pathname.slice(1);
@@ -47,6 +48,11 @@ export const main = async () => {
             app = createApp(ExtensionRoot, {
                 channelName: getChannelName()
             });
+
+            app.provide(InjectionTokens.TWITCH_UI_SERVICE, twitchUIService);
+            app.provide(InjectionTokens.TWITCH_PLAYER_SERVICE, Container.get(TwitchPlayerService));
+            app.provide(InjectionTokens.MESSAGE_SENDER, Container.get(MessageSender));
+            // app.provide(InjectionTokens.AUTH_FACADE, authFacade);
 
             app.mount(createRootElement());
         });

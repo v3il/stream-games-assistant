@@ -28,6 +28,7 @@
     "release-it": "^19.0.3",
     "typescript": "^5.8.3",
     "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-swc-transform": "^1.1.0",
     "wxt": "^0.20.7"
   },
   "dependencies": {

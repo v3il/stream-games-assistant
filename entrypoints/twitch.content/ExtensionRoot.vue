@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-[600px] rounded-xl ml-auto mr-auto fixed z-9999999 bg-[#f7f7f8] dark:bg-[#18181b] border sga-extension-root" :class="classes">
         <component :is="WidgetComponent" v-if="true" />
-        <AuthView v-else />
+<!--        <AuthView v-else />-->
     </div>
 
 <!--    <DebugMode v-if="authFacade.isAuthenticated" />-->
@@ -10,11 +10,11 @@
 <script setup lang="ts">
 // import { Container } from 'typedi';
 // import { AuthFacade } from '@shared/modules';
-import AuthView from './AuthView.svelte';
+// import AuthView from './AuthView.svelte';
 // import { DebugMode } from './debugMode';
 
 import { AsyncHitsquadWidget } from './hitsquad';
-import { AsyncStaggerrillaWidget } from './staggerrilla';
+// import { AsyncStaggerrillaWidget } from './staggerrilla';
 
 // const authFacade = Container.get(AuthFacade);
 
@@ -29,7 +29,7 @@ const classes = computed(() => ({
 }));
 
 const WidgetComponent = computed(() => {
-    return props.channelName === 'staggerrilla' ? AsyncStaggerrillaWidget : AsyncHitsquadWidget;
+    return /*props.channelName === 'staggerrilla' && false ? AsyncStaggerrillaWidget :*/ AsyncHitsquadWidget;
 });
 
 watchClassOnElement(document.documentElement, 'tw-root--theme-dark', (isDark) => {

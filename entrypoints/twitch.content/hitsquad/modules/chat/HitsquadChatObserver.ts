@@ -1,7 +1,6 @@
-import { EventEmitter } from '@shared/EventEmitter';
-import { Container, Service } from 'typedi';
-import { config } from '@twitch/config';
+import { Service, Token } from 'typedi';
 import { ChatObserver, IChatMessage } from '@twitch/core/modules';
+import { hitsquadConfig } from '../../hitsquadConfig';
 
 export interface IHitsquadMessage extends IChatMessage {
     isSystemMessage: boolean;
@@ -9,30 +8,16 @@ export interface IHitsquadMessage extends IChatMessage {
 }
 
 @Service()
-export class HitsquadChatObserver {
-    private readonly chatObserver!: ChatObserver;
+export class HitsquadChatObserver extends ChatObserver<IHitsquadMessage> {
+    protected buildMessage(chatMessage: IChatMessage): IHitsquadMessage {
+        const isSystemMessage = chatMessage.userName === hitsquadConfig.twitchAdminName;
+        const isReward = isSystemMessage && this.isRewardMessage(chatMessage.message);
 
-    readonly events = EventEmitter.create<{
-        message: IHitsquadMessage;
-    }>();
-
-    constructor() {
-        this.chatObserver = Container.get(ChatObserver);
-
-        this.chatObserver.observeChat((chatMessage: IChatMessage) => {
-            const isSystemMessage = chatMessage.userName === config.twitchAdminName;
-            const isReward = isSystemMessage && this.isRewardMessage(chatMessage.message);
-
-            this.events.emit('message', {
-                ...chatMessage,
-                isSystemMessage,
-                isReward
-            });
-        });
-    }
-
-    observeChat(callback: (message: IHitsquadMessage) => void) {
-        return this.events.on('message', (message) => callback(message!));
+        return {
+            ...chatMessage,
+            isSystemMessage,
+            isReward
+        };
     }
 
     private isRewardMessage(message: string): boolean {

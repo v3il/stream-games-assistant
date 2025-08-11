@@ -1,18 +1,28 @@
 import { Timing } from '@shared/consts';
 import { random } from 'lodash';
-import { config } from '@twitch/config';
-import { MiniGameBaseService } from '@twitch/core/modules';
+import { MessageSender, MiniGameBaseService } from '@twitch/core/modules';
+import { Inject, Service } from 'typedi';
+import { type HitsquadLocalSettingsService, localSettingsServiceToken } from '../../hitsquadInjectionTokens';
+import { hitsquadConfig } from '../../hitsquadConfig';
 
+@Service()
 export class HitsquadGameService extends MiniGameBaseService {
     readonly command = '!hitsquad';
     static readonly HITSQUAD_GAMES_PER_DAY = 2400;
     static readonly HITSQUAD_GAMES_ON_SCREEN = 12;
 
-    remainingRounds = $state(0);
-    totalRounds = $state(0);
-    isGameRunning = $derived(this.remainingRounds > 0);
+    remainingRounds = 0;
+    totalRounds = 0;
+    isGameRunning = this.remainingRounds > 0;
 
     private timeoutId!: number;
+
+    constructor(
+        @Inject(localSettingsServiceToken) private readonly localSettingsService: HitsquadLocalSettingsService,
+        @Inject() messageSender: MessageSender
+    ) {
+        super({ messageSender });
+    }
 
     init() {
         this.remainingRounds = this.localSettingsService.settings.hitsquadRounds;
@@ -56,7 +66,7 @@ export class HitsquadGameService extends MiniGameBaseService {
     }
 
     protected getDelay() {
-        return random(30 * Timing.SECOND, 2 * Timing.MINUTE) + config.hitsquadGameBaseTimeout;
+        return random(30 * Timing.SECOND, 2 * Timing.MINUTE) + hitsquadConfig.hitsquadGameBaseTimeout;
     }
 
     protected scheduleRound() {

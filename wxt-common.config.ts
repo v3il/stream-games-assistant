@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { UserConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
+import swc from 'vite-plugin-swc-transform';
 
 interface IParams extends UserConfig {
     description: string;
@@ -13,6 +14,22 @@ export const buildConfig = ({ description, ...rest }: IParams): UserConfig => ({
     vite: () => ({
         plugins: [
             tailwindcss(),
+            swc({
+                swcOptions: {
+                    jsc: {
+                        target: 'es2022',
+                        transform: {
+                            legacyDecorator: true,
+                            decoratorMetadata: true,
+                            useDefineForClassFields: false,
+                        },
+                        parser: {
+                            syntax: 'typescript',
+                            decorators: true,
+                        },
+                    },
+                },
+            }),
         ],
     }),
 

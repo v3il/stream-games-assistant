@@ -1,29 +1,20 @@
 import { MessageSender } from '../chat';
-import { StreamStatusService } from '@twitch/modules/stream';
-import { LocalSettingsService } from '@shared/services';
-import { ITwitchLocalSettings } from '@twitch/modules';
-import { Container } from 'typedi';
 import { random } from 'lodash';
 import { Timing } from '@shared/consts';
-import { wait } from '@utils';
 
-interface IMiniGameServiceParams {
-    localSettingsService: LocalSettingsService<ITwitchLocalSettings>;
+interface IMiniGameBaseServiceOptions {
+    messageSender: MessageSender;
 }
 
 export abstract class MiniGameBaseService {
     abstract readonly command: string;
 
     protected readonly messageSender: MessageSender;
-    protected readonly streamStatusService: StreamStatusService;
-    protected readonly localSettingsService: LocalSettingsService<ITwitchLocalSettings>;
 
-    timeUntilMessage = $state(0);
+    timeUntilMessage = 0;
 
-    constructor({ localSettingsService }: IMiniGameServiceParams) {
-        this.localSettingsService = localSettingsService;
-        this.messageSender = Container.get(MessageSender);
-        this.streamStatusService = Container.get(StreamStatusService);
+    constructor({ messageSender }: IMiniGameBaseServiceOptions) {
+        this.messageSender = messageSender;
     }
 
     sendCommand() {
@@ -38,6 +29,14 @@ export abstract class MiniGameBaseService {
         return false;
     }
 
+    protected get isMiniGamesBotWorking() {
+        return true;
+    }
+
+    protected get isMiniGamesAllowed() {
+        return true;
+    }
+
     protected abstract completeRound(): void;
     protected abstract buildCommand(): string;
     protected abstract getDelay(): number;
@@ -45,11 +44,11 @@ export abstract class MiniGameBaseService {
     protected abstract scheduleRound(): void;
 
     protected async processRound() {
-        if (!this.streamStatusService.isBotWorking) {
+        if (!this.isMiniGamesBotWorking) {
             return;
         }
 
-        while (!this.streamStatusService.isMiniGamesAllowed) {
+        while (!this.isMiniGamesAllowed) {
             const delay = random(10 * Timing.SECOND, 30 * Timing.SECOND);
 
             this.timeUntilMessage = Date.now() + delay;

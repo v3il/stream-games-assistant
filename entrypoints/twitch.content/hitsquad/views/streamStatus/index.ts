@@ -1,1 +1,1 @@
-export { default as StreamStatus } from './StreamStatus.svelte';
+export { default as StreamStatus } from './StreamStatus';

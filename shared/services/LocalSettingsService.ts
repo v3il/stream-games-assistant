@@ -2,7 +2,7 @@ export class LocalSettingsService<T extends object> {
     private key!: string;
     private storage = window.localStorage;
 
-    private _settings = $state({} as T);
+    private _settings!: T;
 
     constructor(private readonly defaultSettings: T) {}
 

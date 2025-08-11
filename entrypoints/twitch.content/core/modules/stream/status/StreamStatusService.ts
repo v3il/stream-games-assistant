@@ -1,10 +1,15 @@
-import { Container } from 'typedi';
 import { TwitchUIService } from '../../TwitchUIService';
 import { ColorService } from '@shared/services';
 import { Timing } from '@shared/consts';
 import type { ICheckPoint } from './ICheckPoint';
 import { blackScreenChecks } from './blackScreenChecks';
 import { OffscreenStreamRenderer } from '../OffscreenStreamRenderer';
+
+interface IStreamStatusServiceOptions {
+    offscreenStreamRenderer: OffscreenStreamRenderer;
+    twitchUIService: TwitchUIService;
+    colorService: ColorService;
+}
 
 export class StreamStatusService {
     private readonly offscreenStreamRenderer!: OffscreenStreamRenderer;
@@ -16,10 +21,10 @@ export class StreamStatusService {
 
     isStreamOk = true;
 
-    constructor() {
-        this.offscreenStreamRenderer = Container.get(OffscreenStreamRenderer);
-        this.twitchUIService = Container.get(TwitchUIService);
-        this.colorService = Container.get(ColorService);
+    constructor(options: IStreamStatusServiceOptions) {
+        this.offscreenStreamRenderer = options.offscreenStreamRenderer;
+        this.twitchUIService = options.twitchUIService;
+        this.colorService = options.colorService;
 
         this.checkStreamStatus();
 
@@ -54,7 +59,7 @@ export class StreamStatusService {
         this.isStreamOk = true;
     }
 
-    private checkPoints(points: ICheckPoint[]): number {
+    protected checkPoints(points: ICheckPoint[]): number {
         const checksResults = points.map(({ xPercent, yPercent, color }) => {
             const pixelHexColor = this.offscreenStreamRenderer.getColorAtPointPercent(xPercent, yPercent);
 

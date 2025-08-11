@@ -1,17 +1,29 @@
 import { Timing } from '@shared/consts';
 import { UnsubscribeTrigger } from '@shared/EventEmitter';
 import { random } from 'lodash';
-import { MiniGameBaseService } from '@twitch/core/modules';
+import { MessageSender, MiniGameBaseService } from '@twitch/core/modules';
+import { Inject, Service } from 'typedi';
+import { HitsquadStreamStatusService } from '../stream';
+import { type HitsquadLocalSettingsService, localSettingsServiceToken } from '../../hitsquadInjectionTokens';
 
+@Service()
 export class ChestGameService extends MiniGameBaseService {
     readonly command = '!chest';
 
     private timeoutId!: number;
     private unsubscribe!: UnsubscribeTrigger;
 
-    isGamePhase = $state(false);
-    isGameEnabled = $state(false);
-    isRoundRunning = $state(false);
+    isGamePhase = false;
+    isGameEnabled = false;
+    isRoundRunning = false;
+
+    constructor(
+        @Inject(localSettingsServiceToken) private readonly localSettingsService: HitsquadLocalSettingsService,
+        @Inject() private readonly streamStatusService: HitsquadStreamStatusService,
+        @Inject() messageSender: MessageSender
+    ) {
+        super({ messageSender });
+    }
 
     init() {
         this.isGameEnabled = this.localSettingsService.settings.chestGame;

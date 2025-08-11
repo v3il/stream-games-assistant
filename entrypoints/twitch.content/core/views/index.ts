@@ -1,1 +1,2 @@
-export { default as ExtensionRoot } from './ExtensionRoot.vue';
+export * from './miniGames'
+export * from './streamStatus'

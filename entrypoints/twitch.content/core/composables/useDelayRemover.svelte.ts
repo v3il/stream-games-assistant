@@ -1,37 +1,34 @@
-import { TwitchPlayerService } from '@twitch/modules/stream';
-import { Container } from 'typedi';
-import { SettingsFacade } from '@shared/modules';
-import { onDestroy } from 'svelte';
-import { config } from '@twitch/config';
+import { Timing } from '@shared/consts';
+import { InjectionTokens } from '../../injectionTokens';
 
 export const useDelayRemover = () => {
     let intervalId: number;
 
-    const settingsFacade = Container.get(SettingsFacade);
-    const playerService = Container.get(TwitchPlayerService);
+    // const settingsFacade = Container.get(SettingsFacade);
+    const playerService = inject(InjectionTokens.TWITCH_PLAYER_SERVICE)!;
 
-    if (settingsFacade.settings.decreaseStreamDelay) {
+    // if (settingsFacade.settings.decreaseStreamDelay) {
         init();
-    }
+    // }
 
-    const unsubscribe = settingsFacade.onSettingChanged('decreaseStreamDelay', (isEnabled) => {
-        isEnabled ? init() : destroy();
-    });
+    // const unsubscribe = settingsFacade.onSettingChanged('decreaseStreamDelay', (isEnabled) => {
+    //     isEnabled ? init() : destroy();
+    // });
 
     function init() {
         playerService.decreaseVideoDelay();
 
         intervalId = window.setInterval(() => {
             playerService.decreaseVideoDelay();
-        }, config.delayRemoverInterval);
+        }, 3 * Timing.MINUTE);
     }
 
     function destroy() {
         clearInterval(intervalId);
     }
 
-    onDestroy(() => {
+    onUnmounted(() => {
         destroy();
-        unsubscribe();
+        // unsubscribe();
     });
 };

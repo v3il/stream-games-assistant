@@ -1,6 +1,6 @@
 import { EventEmitter } from '@shared/EventEmitter';
-import { Container, Service } from 'typedi';
-import { TwitchUIService } from '@twitch/modules';
+import { Inject } from 'typedi';
+import { TwitchUIService } from '../TwitchUIService';
 
 export interface IChatMessage {
     messageWrapperEl: HTMLElement;
@@ -9,25 +9,19 @@ export interface IChatMessage {
     hasMyMention: boolean;
 }
 
-@Service()
-export class ChatObserver {
-    private readonly twitchUIService!: TwitchUIService;
+export abstract class ChatObserver<M extends IChatMessage = IChatMessage> {
+    readonly events = EventEmitter.create<{
+        message: M;
+    }>();
 
-    readonly events;
     private observer;
 
-    constructor() {
-        this.twitchUIService = Container.get(TwitchUIService);
-
-        this.events = EventEmitter.create<{
-            message: IChatMessage;
-        }>();
-
+    constructor(@Inject() private readonly twitchUIService: TwitchUIService) {
         this.observer = this.createObserver();
         this.observer.observe(this.twitchUIService.chatScrollableAreaEl!, { childList: true });
     }
 
-    observeChat(callback: (message: IChatMessage) => void) {
+    observeChat(callback: (message: M) => void) {
         return this.events.on('message', (message) => callback(message!));
     }
 
@@ -61,11 +55,13 @@ export class ChatObserver {
         const message = messageEl!.textContent!.toLowerCase().trim();
         const hasMyMention = mentionEl?.textContent?.toLowerCase().trim() === this.twitchUIService.twitchUserName;
 
-        this.events.emit('message', {
+        this.events.emit('message', this.buildMessage({
             messageWrapperEl,
             userName,
             hasMyMention,
             message
-        });
+        }));
     }
+
+    protected abstract buildMessage(message: IChatMessage): M;
 }

@@ -1,21 +1,17 @@
-import { Container, Service } from 'typedi';
-import { TwitchUIService } from '@twitch/modules';
+import { Container, Inject, Service } from 'typedi';
+import { TwitchUIService } from '../TwitchUIService';
 import { ColorService } from '@shared/services';
 import { Timing } from '@shared/consts';
 
 @Service()
 export class OffscreenStreamRenderer {
     private canvasEl!: HTMLCanvasElement;
-
-    private readonly twitchUIService!: TwitchUIService;
-    private readonly colorService!: ColorService;
-
     private readonly timeoutId!: number;
 
-    constructor() {
-        this.twitchUIService = Container.get(TwitchUIService);
-        this.colorService = Container.get(ColorService);
-
+    constructor(
+        @Inject() private readonly twitchUIService: TwitchUIService,
+        @Inject() private readonly colorService: ColorService,
+    ) {
         this.createCanvas();
         this.renderVideoFrame();
 

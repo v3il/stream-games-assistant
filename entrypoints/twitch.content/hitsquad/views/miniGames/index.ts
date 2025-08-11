@@ -1,1 +1,1 @@
-export { default as MiniGamesControls } from './MiniGamesControls.svelte';
+export { default as MiniGamesControls } from './MiniGamesControls';

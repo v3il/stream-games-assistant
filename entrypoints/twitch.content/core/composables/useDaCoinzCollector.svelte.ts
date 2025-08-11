@@ -1,13 +1,10 @@
-import { Container } from 'typedi';
-import { TwitchUIService } from '@twitch/modules';
-import { SettingsFacade } from '@shared/modules';
-import { onDestroy } from 'svelte';
 import { debounce } from 'lodash';
+import { InjectionTokens } from '../../injectionTokens';
 
 export const useDaCoinzCollector = () => {
     let observer: MutationObserver | null = null;
-    const settingsFacade = Container.get(SettingsFacade);
-    const twitchUIService = Container.get(TwitchUIService);
+    // const settingsFacade = Container.get(SettingsFacade);
+    const twitchUIService = inject(InjectionTokens.TWITCH_UI_SERVICE)!;
     const chatInputContainerEl = twitchUIService.chatButtonsContainerEl! as HTMLElement;
 
     const claimChannelPoints = debounce(() => {
@@ -18,13 +15,13 @@ export const useDaCoinzCollector = () => {
         }
     }, 2000);
 
-    if (settingsFacade.settings.collectDaCoinz) {
+    // if (settingsFacade.settings.collectDaCoinz) {
         init();
-    }
+    // }
 
-    const unsubscribe = settingsFacade.onSettingChanged('collectDaCoinz', (isEnabled) => {
-        isEnabled ? init() : destroy();
-    });
+    // const unsubscribe = settingsFacade.onSettingChanged('collectDaCoinz', (isEnabled) => {
+    //     isEnabled ? init() : destroy();
+    // });
 
     function createObserver() {
         return new MutationObserver((mutations) => {
@@ -46,8 +43,8 @@ export const useDaCoinzCollector = () => {
         observer?.disconnect();
     }
 
-    onDestroy(() => {
+    onUnmounted(() => {
         destroy();
-        unsubscribe();
+        // unsubscribe();
     });
 };

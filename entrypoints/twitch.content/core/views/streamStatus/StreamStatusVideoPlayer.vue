@@ -3,16 +3,14 @@
 </template>
 
 <script setup lang="ts">
-import { Activity } from '@lucide/svelte';
 import StreamStatusItem from './StreamStatusItem.svelte';
 import { Container } from 'typedi';
-import { StreamStatusService } from '@twitch/modules/stream';
+import { StreamStatusService } from '@twitch/core/modules';
 
-const streamStatusService = Container.get(StreamStatusService);
+const streamStatusService = Container.get<StreamStatusService>(StreamStatusService);
 
-const tooltip = $derived(
-    streamStatusService.isStreamOk
-        ? 'Stream is running'
-        : 'Stream is broken. Mini-game commands are on hold'
+const tooltip = computed(() => streamStatusService.isStreamOk
+    ? 'Stream is running'
+    : 'Stream is broken. Mini-game commands are on hold'
 );
 </script>

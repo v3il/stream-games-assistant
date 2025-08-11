@@ -1,32 +1,20 @@
-import { Container, Service } from 'typedi';
-import { TwitchUIService } from '@twitch/modules';
+import { Inject, Service } from 'typedi';
+import { EventEmitter } from '@shared/EventEmitter';
+import { rightAntiCheatChecks, leftAntiCheatChecks, chestGameChecks, brunoChestGameChecks, lootGameChecks } from './checks';
+import { OffscreenStreamRenderer, StreamStatusService, TwitchUIService } from '@twitch/core/modules';
+import { hitsquadConfig } from '../../hitsquadConfig';
+import { HitsquadChatObserver } from '@twitch/hitsquad/modules/chat';
 import { ColorService } from '@shared/services';
-import { logDev } from '@utils';
-import { EventEmitter, UnsubscribeTrigger } from '@shared/EventEmitter';
-import { Timing } from '@shared/consts';
-import { HitsquadChatObserver } from '../../chat';
-import { config } from '@twitch/config';
-import { rightAntiCheatChecks, leftAntiCheatChecks, chestGameChecks, brunoChestGameChecks, ICheckPoint, lootGameChecks, blackScreenChecks } from './checks';
-import { OffscreenStreamRenderer } from '../OffscreenStreamRenderer';
-import { StreamStatusService } from '@twitch/core/modules/stream/streamStatus/StreamStatusService';
 
 @Service()
 export class HitsquadStreamStatusService extends StreamStatusService {
-    private readonly offscreenStreamRenderer!: OffscreenStreamRenderer;
-    private readonly twitchUIService!: TwitchUIService;
-    private readonly colorService!: ColorService;
-    private readonly chatObserver: HitsquadChatObserver;
-
-    private timeoutId!: number;
-    private streamReloadTimeoutId!: number;
     private lastRewardTimestamp: number = Date.now();
-    private unsubscribe!: UnsubscribeTrigger;
 
     isLootGame = false;
-    isAntiCheat = $state(false);
+    isAntiCheat = false;
     isChestGame = false;
-    isBotWorking = $state(true);
-    isStreamOk = $state(true);
+    isBotWorking = true;
+    isStreamOk = true;
 
     readonly events = new EventEmitter<{
         loot: boolean,
@@ -34,58 +22,42 @@ export class HitsquadStreamStatusService extends StreamStatusService {
         antiCheat: boolean,
     }>();
 
-    constructor() {
-        this.offscreenStreamRenderer = Container.get(OffscreenStreamRenderer);
-        this.twitchUIService = Container.get(TwitchUIService);
-        this.colorService = Container.get(ColorService);
-        this.chatObserver = Container.get(HitsquadChatObserver);
+    constructor(
+        @Inject() offscreenStreamRenderer: OffscreenStreamRenderer,
+        @Inject() twitchUIService: TwitchUIService,
+        @Inject() colorService: ColorService,
+        @Inject() private readonly chatObserver: HitsquadChatObserver
+    ) {
+        super({
+            offscreenStreamRenderer,
+            twitchUIService,
+            colorService
+        });
 
         this.listenEvents();
-        this.checkStreamStatus(true);
-
-        this.timeoutId = window.setInterval(() => {
-            this.checkStreamStatus(false);
-        }, 3 * Timing.SECOND);
     }
 
     get isMiniGamesAllowed() {
         return this.isBotWorking && !this.isAntiCheat && this.isStreamOk;
     }
 
-    checkStreamStatus(silent: boolean) {
-        const { activeVideoEl } = this.twitchUIService;
+    checkStreamStatus() {
+        super.checkStreamStatus();
 
-        if (!activeVideoEl || activeVideoEl.paused || activeVideoEl.ended || this.isBlackScreen()) {
-            this.isStreamOk = false;
+        this.isBotWorking = (Date.now() - this.lastRewardTimestamp) < hitsquadConfig.miniGamesBotDowntime;
 
-            if (!this.streamReloadTimeoutId) {
-                this.streamReloadTimeoutId = window.setTimeout(() => {
-                    window.location.reload();
-                }, Timing.MINUTE);
-            }
-
-            logDev('Video is broken');
-            return;
-        }
-
-        clearTimeout(this.streamReloadTimeoutId);
-        this.streamReloadTimeoutId = 0;
-
-        this.isStreamOk = true;
-        this.isBotWorking = (Date.now() - this.lastRewardTimestamp) < config.miniGamesBotDowntime;
-
-        this.checkAntiCheat(silent);
+        this.checkAntiCheat();
 
         if (this.isAntiCheat) {
             return;
         }
 
-        this.checkLootGame(silent);
-        this.checkChestGame(silent);
+        this.checkLootGame();
+        this.checkChestGame();
     }
 
     private listenEvents() {
-        this.unsubscribe = this.chatObserver.observeChat(({ isReward }) => {
+        this.chatObserver.observeChat(({ isReward }) => {
             if (isReward) {
                 this.lastRewardTimestamp = Date.now();
             }
@@ -95,7 +67,7 @@ export class HitsquadStreamStatusService extends StreamStatusService {
     private checkAntiCheat(silent: boolean = false) {
         const previousStatus = this.isAntiCheat;
 
-        const points = ['hitsquadbruno', 'hitsquadvito'].includes(config.twitchChannelName)
+        const points = ['hitsquadbruno', 'hitsquadvito'].includes(hitsquadConfig.twitchChannelName)
             ? leftAntiCheatChecks
             : rightAntiCheatChecks;
 
@@ -108,7 +80,7 @@ export class HitsquadStreamStatusService extends StreamStatusService {
         }
     }
 
-    private checkLootGame(silent: boolean) {
+    private checkLootGame(silent: boolean = false) {
         const previousStatus = this.isLootGame;
 
         this.isLootGame = lootGameChecks.some((checks) => {
@@ -121,9 +93,9 @@ export class HitsquadStreamStatusService extends StreamStatusService {
         }
     }
 
-    private checkChestGame(silent: boolean) {
+    private checkChestGame(silent: boolean = false) {
         const previousStatus = this.isChestGame;
-        const points = config.twitchChannelName === 'hitsquadbruno' ? brunoChestGameChecks : chestGameChecks;
+        const points = hitsquadConfig.twitchChannelName === 'hitsquadbruno' ? brunoChestGameChecks : chestGameChecks;
         const matchedChecks = this.checkPoints(points);
 
         this.isChestGame = (matchedChecks / points.length) >= 0.85;
@@ -131,23 +103,5 @@ export class HitsquadStreamStatusService extends StreamStatusService {
         if (previousStatus !== this.isChestGame && !silent) {
             this.events.emit('chest', this.isChestGame);
         }
-    }
-
-    private checkPoints(points: ICheckPoint[]): number {
-        const checksResults = points.map(({ xPercent, yPercent, color }) => {
-            const pixelHexColor = this.offscreenStreamRenderer.getColorAtPointPercent(xPercent, yPercent);
-
-            return this.colorService.getColorsSimilarity(color, pixelHexColor);
-        });
-
-        const matchedChecks = checksResults.filter((similarity) => similarity >= 0.85);
-
-        return matchedChecks.length;
-    }
-
-    private isBlackScreen() {
-        const matchedChecks = this.checkPoints(blackScreenChecks);
-
-        return (matchedChecks / blackScreenChecks.length) >= 0.85;
     }
 }

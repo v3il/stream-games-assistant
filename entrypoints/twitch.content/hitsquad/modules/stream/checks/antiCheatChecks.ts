@@ -1,4 +1,4 @@
-import { ICheckPoint } from './ICheckPoint';
+import { ICheckPoint } from '@twitch/core/modules';
 
 export const rightAntiCheatChecks: ICheckPoint[] = [
     {
