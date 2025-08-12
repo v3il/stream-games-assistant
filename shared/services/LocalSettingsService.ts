@@ -1,17 +1,19 @@
 export class LocalSettingsService<T extends object> {
-    private key!: string;
     private storage = window.localStorage;
 
     private _settings!: T;
 
-    constructor(private readonly defaultSettings: T) {}
+    constructor(private readonly key: string, private readonly defaultSettings: T) {
+        this.loadSettings();
+
+        console.error(this.key, this.settings)
+    }
 
     get settings(): T {
         return this._settings;
     }
 
-    loadSettings(key: string): void {
-        this.key = key;
+    private loadSettings(): void {
         this._settings = this.loadFromStorage() ?? this.defaultSettings;
     }
 

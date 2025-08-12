@@ -1,4 +1,4 @@
-import { Service, Token } from 'typedi';
+import { Service } from 'typedi';
 import { ChatObserver, IChatMessage } from '@twitch/core/modules';
 import { hitsquadConfig } from '../../hitsquadConfig';
 

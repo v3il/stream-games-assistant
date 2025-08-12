@@ -2,19 +2,29 @@ import { MessageSender } from '../chat';
 import { random } from 'lodash';
 import { Timing } from '@shared/consts';
 
-interface IMiniGameBaseServiceOptions {
+interface IMiniGameBaseServiceOptions<S extends IMiniGameBaseServiceState> {
     messageSender: MessageSender;
+    initialState: S;
 }
 
-export abstract class MiniGameBaseService {
+export interface IMiniGameBaseServiceState {
+    timeUntilMessage: number;
+}
+
+export abstract class MiniGameBaseService<S extends IMiniGameBaseServiceState> {
     abstract readonly command: string;
 
     protected readonly messageSender: MessageSender;
 
-    timeUntilMessage = 0;
+    protected state: S;
 
-    constructor({ messageSender }: IMiniGameBaseServiceOptions) {
+    constructor({ messageSender, initialState }: IMiniGameBaseServiceOptions<S>) {
         this.messageSender = messageSender;
+        this.state = reactive(initialState) as S;
+    }
+
+    get timeUntilMessage() {
+        return this.state.timeUntilMessage;
     }
 
     sendCommand() {
@@ -51,7 +61,7 @@ export abstract class MiniGameBaseService {
         while (!this.isMiniGamesAllowed) {
             const delay = random(10 * Timing.SECOND, 30 * Timing.SECOND);
 
-            this.timeUntilMessage = Date.now() + delay;
+            this.state.timeUntilMessage = Date.now() + delay;
 
             while (Date.now() < this.timeUntilMessage) {
                 if (!this.shouldHandleGame) {

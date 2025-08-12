@@ -1,36 +1,58 @@
 import { Timing } from '@shared/consts';
 import { UnsubscribeTrigger } from '@shared/EventEmitter';
 import { random } from 'lodash';
-import { MessageSender, MiniGameBaseService } from '@twitch/core/modules';
+import { MessageSender, MiniGameBaseService, IMiniGameBaseServiceState } from '@twitch/core/modules';
 import { Inject, Service } from 'typedi';
 import { HitsquadStreamStatusService } from '../stream';
 import { type HitsquadLocalSettingsService, localSettingsServiceToken } from '../../hitsquadInjectionTokens';
 
+interface IChestGameServiceState extends IMiniGameBaseServiceState {
+    isGamePhase: boolean;
+    isGameEnabled: boolean;
+    isRoundRunning: boolean;
+}
+
 @Service()
-export class ChestGameService extends MiniGameBaseService {
+export class ChestGameService extends MiniGameBaseService<IChestGameServiceState> {
     readonly command = '!chest';
 
     private timeoutId!: number;
     private unsubscribe!: UnsubscribeTrigger;
-
-    isGamePhase = false;
-    isGameEnabled = false;
-    isRoundRunning = false;
 
     constructor(
         @Inject(localSettingsServiceToken) private readonly localSettingsService: HitsquadLocalSettingsService,
         @Inject() private readonly streamStatusService: HitsquadStreamStatusService,
         @Inject() messageSender: MessageSender
     ) {
-        super({ messageSender });
+        super({
+            messageSender,
+            initialState: {
+                timeUntilMessage: 0,
+                isGamePhase: false,
+                isGameEnabled: false,
+                isRoundRunning: false
+            }
+        });
+    }
+
+    get isGamePhase() {
+        return this.state.isGamePhase;
+    }
+
+    get isGameEnabled() {
+        return this.state.isGameEnabled;
+    }
+
+    get isRoundRunning() {
+        return this.state.isRoundRunning;
     }
 
     init() {
-        this.isGameEnabled = this.localSettingsService.settings.chestGame;
-        this.isGamePhase = this.streamStatusService.isChestGame;
+        this.state.isGameEnabled = this.localSettingsService.settings.chestGame;
+        this.state.isGamePhase = this.streamStatusService.isChestGame;
 
         this.unsubscribe = this.streamStatusService.events.on('chest', (isGamePhase?: boolean) => {
-            this.isGamePhase = !!isGamePhase;
+            this.state.isGamePhase = !!isGamePhase;
 
             if (this.shouldHandleGame) {
                 this.scheduleRound();
@@ -39,16 +61,20 @@ export class ChestGameService extends MiniGameBaseService {
     }
 
     start() {
-        this.isGameEnabled = true;
+        this.state.isGameEnabled = true;
         this.saveState();
     }
 
     stop() {
-        this.isRoundRunning = false;
-        this.isGameEnabled = false;
+        this.state.isRoundRunning = false;
+        this.state.isGameEnabled = false;
 
         this.saveState();
         clearTimeout(this.timeoutId);
+    }
+
+    toggle() {
+        this.isGameEnabled ? this.stop() : this.start();
     }
 
     destroy() {
@@ -60,13 +86,17 @@ export class ChestGameService extends MiniGameBaseService {
         return this.isGameEnabled && this.isGamePhase;
     }
 
+    protected get isBotWorking(): boolean {
+        return this.streamStatusService.isBotWorking;
+    }
+
     protected buildCommand() {
         return `${this.command}${random(1, 8)}`;
     }
 
     protected saveState() {
         this.localSettingsService.updateSettings({
-            chestGame: this.isGameEnabled
+            chestGame: this.state.isGameEnabled
         });
     }
 
@@ -81,12 +111,12 @@ export class ChestGameService extends MiniGameBaseService {
     protected scheduleRound() {
         const delay = this.getDelay();
 
-        this.timeUntilMessage = Date.now() + delay;
-        this.isRoundRunning = true;
+        this.state.timeUntilMessage = Date.now() + delay;
+        this.state.isRoundRunning = true;
 
         this.timeoutId = window.setTimeout(async () => {
             await this.processRound();
-            this.isRoundRunning = false;
+            this.state.isRoundRunning = false;
         }, delay);
     }
 }

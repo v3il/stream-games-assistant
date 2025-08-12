@@ -1,1 +1,1 @@
-export { default as MiniGamesControls } from './MiniGamesControls';
+export { default as MiniGamesControls } from './MiniGamesControls.vue';

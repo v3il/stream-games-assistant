@@ -6,10 +6,11 @@
 
 <script setup lang="ts">
 import { Bot } from 'lucide-vue-next';
-import { HitsquadInjectionTokens } from '../../hitsquadInjectionTokens';
 import { StreamStatusItem } from '@twitch/core';
+import { InjectionTokens } from '@twitch/core/injectionTokens';
+import { HitsquadStreamStatusService } from '../../modules';
 
-const streamStatusService = inject(HitsquadInjectionTokens.STREAM_STATUS_SERVICE)!;
+const streamStatusService = inject<HitsquadStreamStatusService>(InjectionTokens.STREAM_STATUS_SERVICE)!;
 
 const tooltip = computed(() => streamStatusService.isBotWorking
     ? 'Mini-games bot is running'

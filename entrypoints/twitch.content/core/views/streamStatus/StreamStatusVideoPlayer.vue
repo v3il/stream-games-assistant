@@ -1,5 +1,6 @@
 <template>
     <StreamStatusItem :ok="streamStatusService.isStreamOk" :tooltip v-slot="{ classes }">
+        {{streamStatusService.isStreamOk}}
         <Activity :size="18" :class="classes" />
     </StreamStatusItem>
 </template>

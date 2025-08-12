@@ -1,20 +1,21 @@
 import { Inject, Service } from 'typedi';
 import { EventEmitter } from '@shared/EventEmitter';
 import { rightAntiCheatChecks, leftAntiCheatChecks, chestGameChecks, brunoChestGameChecks, lootGameChecks } from './checks';
-import { OffscreenStreamRenderer, StreamStatusService, TwitchUIService } from '@twitch/core/modules';
+import { OffscreenStreamRenderer, StreamStatusService, IStreamStatusServiceState, TwitchUIService } from '@twitch/core/modules';
 import { hitsquadConfig } from '../../hitsquadConfig';
-import { HitsquadChatObserver } from '@twitch/hitsquad/modules/chat';
+import { HitsquadChatObserver } from '../chat';
 import { ColorService } from '@shared/services';
 
-@Service()
-export class HitsquadStreamStatusService extends StreamStatusService {
-    private lastRewardTimestamp: number = Date.now();
+interface IHitsquadStreamStatusServiceState extends IStreamStatusServiceState {
+    isLootGame: boolean;
+    isAntiCheat: boolean;
+    isChestGame: boolean;
+    isBotWorking: boolean;
+}
 
-    isLootGame = false;
-    isAntiCheat = false;
-    isChestGame = false;
-    isBotWorking = true;
-    isStreamOk = true;
+@Service()
+export class HitsquadStreamStatusService extends StreamStatusService<IHitsquadStreamStatusServiceState> {
+    private lastRewardTimestamp: number = Date.now();
 
     readonly events = new EventEmitter<{
         loot: boolean,
@@ -31,29 +32,52 @@ export class HitsquadStreamStatusService extends StreamStatusService {
         super({
             offscreenStreamRenderer,
             twitchUIService,
-            colorService
+            colorService,
+            initialState: {
+                isStreamOk: true,
+                isLootGame: false,
+                isAntiCheat: false,
+                isChestGame: false,
+                isBotWorking: true,
+            }
         });
 
         this.listenEvents();
     }
 
+    get isLootGame(): boolean {
+        return this.state.isLootGame;
+    }
+
+    get isChestGame(): boolean {
+        return this.state.isChestGame;
+    }
+
+    get isBotWorking(): boolean {
+        return this.state.isBotWorking;
+    }
+
+    get isAntiCheat(): boolean {
+        return this.state.isAntiCheat;
+    }
+
     get isMiniGamesAllowed() {
-        return this.isBotWorking && !this.isAntiCheat && this.isStreamOk;
+        return super.isMiniGamesAllowed && this.isBotWorking && !this.isAntiCheat;
     }
 
     checkStreamStatus() {
         super.checkStreamStatus();
 
-        // this.isBotWorking = (Date.now() - this.lastRewardTimestamp) < hitsquadConfig.miniGamesBotDowntime;
-        //
-        // this.checkAntiCheat();
-        //
-        // if (this.isAntiCheat) {
-        //     return;
-        // }
-        //
-        // this.checkLootGame();
-        // this.checkChestGame();
+        this.state.isBotWorking = (Date.now() - this.lastRewardTimestamp) < hitsquadConfig.miniGamesBotDowntime;
+
+        this.checkAntiCheat();
+
+        if (this.isAntiCheat) {
+            return;
+        }
+
+        this.checkLootGame();
+        this.checkChestGame();
     }
 
     private listenEvents() {
@@ -73,7 +97,7 @@ export class HitsquadStreamStatusService extends StreamStatusService {
 
         const matchedChecks = this.checkPoints(points);
 
-        this.isAntiCheat = (matchedChecks / points.length) >= 0.5;
+        this.state.isAntiCheat = (matchedChecks / points.length) >= 0.5;
 
         if (previousStatus !== this.isAntiCheat && !silent) {
             this.events.emit('antiCheat', this.isAntiCheat);
@@ -81,27 +105,27 @@ export class HitsquadStreamStatusService extends StreamStatusService {
     }
 
     private checkLootGame(silent: boolean = false) {
-        const previousStatus = this.isLootGame;
+        const previousStatus = this.state.isLootGame;
 
-        this.isLootGame = lootGameChecks.some((checks) => {
+        this.state.isLootGame = lootGameChecks.some((checks) => {
             const matchedChecks = this.checkPoints(checks);
             return (matchedChecks / checks.length) >= 0.85;
         });
 
-        if (previousStatus !== this.isLootGame && !silent) {
-            this.events.emit('loot', this.isLootGame);
+        if (previousStatus !== this.state.isLootGame && !silent) {
+            this.events.emit('loot', this.state.isLootGame);
         }
     }
 
     private checkChestGame(silent: boolean = false) {
-        const previousStatus = this.isChestGame;
+        const previousStatus = this.state.isChestGame;
         const points = hitsquadConfig.twitchChannelName === 'hitsquadbruno' ? brunoChestGameChecks : chestGameChecks;
         const matchedChecks = this.checkPoints(points);
 
-        this.isChestGame = (matchedChecks / points.length) >= 0.85;
+        this.state.isChestGame = (matchedChecks / points.length) >= 0.85;
 
-        if (previousStatus !== this.isChestGame && !silent) {
-            this.events.emit('chest', this.isChestGame);
+        if (previousStatus !== this.state.isChestGame && !silent) {
+            this.events.emit('chest', this.state.isChestGame);
         }
     }
 }

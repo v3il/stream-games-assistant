@@ -5,22 +5,8 @@ import { Container } from 'typedi';
 import { MessageSender, TwitchUIService, TwitchPlayerService } from '@twitch/core/modules';
 import { isDev } from '@shared/consts';
 import { type App, createApp } from 'vue';
-import { InjectionTokens } from './core/injectionTokens';
+import { InjectionTokens, isSupportedChannel } from './core';
 // import { AuthFacade } from '@shared/modules';
-
-function getChannelName() {
-    return location.pathname.slice(1);
-}
-
-function isSupportedChannel() {
-    return [
-        'hitsquadgodfather',
-        'hitsquadbruno',
-        'hitsquadvito',
-        'hitsquadcarlo',
-        'staggerrilla'
-    ].includes(getChannelName());
-}
 
 function createRootElement() {
     const rootEl = document.createElement('div');
@@ -43,11 +29,9 @@ export const main = async () => {
 
     log(`Running in ${isDev ? 'dev' : 'prod'} mode`);
 
-    if (isSupportedChannel()) {
+    if (isSupportedChannel) {
         twitchUIService.whenStreamReady(() => {
-            app = createApp(ExtensionRoot, {
-                channelName: getChannelName()
-            });
+            app = createApp(ExtensionRoot);
 
             app.provide(InjectionTokens.TWITCH_UI_SERVICE, twitchUIService);
             app.provide(InjectionTokens.TWITCH_PLAYER_SERVICE, Container.get(TwitchPlayerService));
@@ -64,7 +48,7 @@ export const main = async () => {
             app = null;
         }
 
-        if (isSupportedChannel()) {
+        if (isSupportedChannel) {
             location.reload();
         }
     });

@@ -18,10 +18,6 @@ import { AsyncHitsquadWidget } from './hitsquad';
 
 // const authFacade = Container.get(AuthFacade);
 
-const props = defineProps<{
-    channelName: string;
-}>();
-
 const isDarkTheme = ref(false);
 
 const classes = computed(() => ({
@@ -29,7 +25,7 @@ const classes = computed(() => ({
 }));
 
 const WidgetComponent = computed(() => {
-    return /*props.channelName === 'staggerrilla' && false ? AsyncStaggerrillaWidget :*/ AsyncHitsquadWidget;
+    return /*channelName === 'staggerrilla' && false ? AsyncStaggerrillaWidget :*/ AsyncHitsquadWidget;
 });
 
 watchClassOnElement(document.documentElement, 'tw-root--theme-dark', (isDark) => {

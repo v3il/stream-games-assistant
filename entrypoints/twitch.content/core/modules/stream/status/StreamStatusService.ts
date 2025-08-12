@@ -5,13 +5,18 @@ import type { ICheckPoint } from './ICheckPoint';
 import { blackScreenChecks } from './blackScreenChecks';
 import { OffscreenStreamRenderer } from '../OffscreenStreamRenderer';
 
-interface IStreamStatusServiceOptions {
+interface IStreamStatusServiceOptions<S extends IStreamStatusServiceState> {
     offscreenStreamRenderer: OffscreenStreamRenderer;
     twitchUIService: TwitchUIService;
     colorService: ColorService;
+    initialState: S;
 }
 
-export class StreamStatusService {
+export interface IStreamStatusServiceState {
+    isStreamOk: boolean;
+}
+
+export class StreamStatusService<S extends IStreamStatusServiceState> {
     private readonly offscreenStreamRenderer!: OffscreenStreamRenderer;
     private readonly twitchUIService!: TwitchUIService;
     private readonly colorService!: ColorService;
@@ -19,18 +24,24 @@ export class StreamStatusService {
     private timeoutId!: number;
     private streamReloadTimeoutId!: number;
 
-    isStreamOk = true;
+    protected state: S;
 
-    constructor(options: IStreamStatusServiceOptions) {
+    constructor(options: IStreamStatusServiceOptions<S>) {
         this.offscreenStreamRenderer = options.offscreenStreamRenderer;
         this.twitchUIService = options.twitchUIService;
         this.colorService = options.colorService;
+
+        this.state = reactive(options.initialState) as S;
 
         this.checkStreamStatus();
 
         this.timeoutId = window.setInterval(() => {
             this.checkStreamStatus();
         }, 3 * Timing.SECOND);
+    }
+
+    get isStreamOk() {
+        return this.state.isStreamOk;
     }
 
     get isMiniGamesAllowed() {
@@ -41,7 +52,7 @@ export class StreamStatusService {
         const { activeVideoEl } = this.twitchUIService;
 
         if (!activeVideoEl || activeVideoEl.paused || activeVideoEl.ended || this.isBlackScreen()) {
-            this.isStreamOk = false;
+            this.state.isStreamOk = false;
 
             if (!this.streamReloadTimeoutId) {
                 this.streamReloadTimeoutId = window.setTimeout(() => {
@@ -56,7 +67,7 @@ export class StreamStatusService {
         clearTimeout(this.streamReloadTimeoutId);
         this.streamReloadTimeoutId = 0;
 
-        this.isStreamOk = true;
+        this.state.isStreamOk = true;
     }
 
     protected checkPoints(points: ICheckPoint[]): number {
