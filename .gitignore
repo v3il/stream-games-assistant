@@ -24,4 +24,4 @@ stats-*.json
 *.sln
 *.sw?
 .env
-.iml
+*.iml

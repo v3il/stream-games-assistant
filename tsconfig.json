@@ -1,0 +1,13 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "paths": {
+      "@twitch/*": ["./entrypoints/twitch.content/*"],
+      "@store/*": ["./entrypoints/store.content/*"],
+      "@shared/*": ["./shared/*"],
+      "@utils": ["./utils/index.ts"],
+    }
+  }
+}
