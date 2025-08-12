@@ -30,7 +30,7 @@ const hitsquadGameService = Container.get(HitsquadGameService);
 const lootGameService = Container.get(LootGameService);
 
 const startGameServices = () => {
-    // hitsquadGameService.init();
+    hitsquadGameService.init();
     // lootGameService.init();
     chestGameService.init();
 };

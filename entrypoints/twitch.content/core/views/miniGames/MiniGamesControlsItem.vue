@@ -3,7 +3,7 @@
         <button
             class="inline-flex items-center justify-center h-[36px] w-[36px] dark:hover:bg-[#27272a]/40 border border-[#3232399e]/70 dark:border-[#3f3f46]/30 rounded-l-lg p-[8px] transition-all duration-200 group ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed dark:hover:text-accent-foreground"
             :title="name"
-            @click="$emit('toggle')"
+            @click="$emit('toggle', !isGameActive)"
         >
             <slot name="icon" :classes="toggleIconClasses" />
         </button>
@@ -45,7 +45,7 @@ defineSlots<{
 }>();
 
 defineEmits<{
-    toggle: [];
+    toggle: [boolean];
     send: [];
 }>()
 

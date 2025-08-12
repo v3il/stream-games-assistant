@@ -6,14 +6,14 @@ import { Inject, Service } from 'typedi';
 import { HitsquadStreamStatusService } from '../stream';
 import { type HitsquadLocalSettingsService, localSettingsServiceToken } from '../../hitsquadInjectionTokens';
 
-interface IChestGameServiceState extends IMiniGameBaseServiceState {
+interface IChestGameState extends IMiniGameBaseServiceState {
     isGamePhase: boolean;
     isGameEnabled: boolean;
     isRoundRunning: boolean;
 }
 
 @Service()
-export class ChestGameService extends MiniGameBaseService<IChestGameServiceState> {
+export class ChestGameService extends MiniGameBaseService<IChestGameState> {
     readonly command = '!chest';
 
     private timeoutId!: number;
